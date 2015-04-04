@@ -20,6 +20,22 @@ mcode.isEmpty = function(obj) {
     return true;
 };
 
+mcode.parts = function(s) {
+    var parts = [];
+    s.split("\n").forEach(function(line) {
+        if (parts.length > 1) {
+            var last = parts[parts.length - 1];
+            if (last.length + line.length < 500)
+                parts[parts.length - 1] += line + "\n";
+            else
+                parts.push(line + "\n");
+        } else {
+            parts.push(line + "\n");
+        }
+    });
+    return parts;
+};
+
 mcode.language = function(source) {
     var lang = source.match(/lang\="?\w+"?\]/gi);
     if (!lang)
@@ -32,6 +48,7 @@ mcode.code = function(source) {
     var code = source.substring(ind + 1, source.length - 7);
     code = code.split("<em>").join("*").split("</em>").join("*").split("<br>").join("\n");
     code = code.split("&lt;").join("<").split("&gt;").join(">").split("&quot;").join("\"").split("&amp;").join("&");
+    code = code.split("#92;").join("\\");
     return code;
 };
 
@@ -61,20 +78,34 @@ mcode.doTask = function(element, subtasks) {
     element.innerHTML = html;
 };
 
-mcode.request = function(element, source) {
+mcode.request = function(element, source, lang, parts, current, html) {
     if (!element || typeof source != "string")
         return;
-    var lang = mcode.language(source);
-    var code = mcode.code(source);
-    var params = "code=" + encodeURIComponent(code) + (!!lang ? ("&lexer=" + encodeURIComponent(lang)) : "");
+    if (!lang)
+        lang = mcode.language(source);
+    if (!parts)
+        parts = mcode.parts(mcode.code(source));
+    if (!current)
+        current = 0;
+    if (!html)
+        html = "";
+    var params = "code=" + encodeURIComponent(parts[current]) + (!!lang ? ("&lexer=" + encodeURIComponent(lang)) : "");
     GM_xmlhttpRequest({
         method: "GET",
         url: "http://hilite.me/api?" + params,
         onload: function(res) {
             if (4 === res.readyState) {
                 if (200 == res.status) {
-                    var html = res.responseText;
-                    mcode.subtaskReceived(element, source, html);
+                    var text = res.responseText;
+                    if (html.length > 0) {
+                        html = html.replace("</pre></div>", "");
+                        text = text.replace(/<div.*?><pre.*?>/, "");
+                    }
+                    html += text;
+                    if (current == parts.length - 1)
+                        mcode.subtaskReceived(element, source, html);
+                    else
+                        mcode.request(element, source, lang, parts, current + 1, html);
                 } else {
                     alert(res.statusText);
                 }
