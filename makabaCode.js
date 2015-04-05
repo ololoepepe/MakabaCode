@@ -58,10 +58,10 @@ mcode.parts = function(s) {
 };
 
 mcode.language = function(source) {
-    var lang = source.match(/lang\="?\w+"?\]/gi);
+    var lang = source.match(/lang\="?(\w|\+)+"?\]/gi);
     if (!lang)
         return null;
-    return lang[0].replace("lang=", "").replace("]", "").split("\"").join("").split(" ").join("").toLowerCase();
+    return lang[0].replace("lang=", "").replace("]", "").split("\"").join("").split(" ").join("").replace("++", "pp").toLowerCase();
 };
 
 mcode.code = function(source) {
@@ -70,6 +70,8 @@ mcode.code = function(source) {
     code = code.split("<em>").join("*").split("</em>").join("*").split("<br>").join("\n");
     code = code.split("&lt;").join("<").split("&gt;").join(">").split("&quot;").join("\"").split("&amp;").join("&");
     code = code.split("#92;").join("\\");
+    if (code.length < 1)
+       return code;
     while (code.indexOf("\n") == 0)
         code = code.substr(1);
     while (code.lastIndexOf("\n") == code.length - 1)
@@ -149,7 +151,7 @@ mcode.processBlockquote = function(element) {
         return;
     element["makaba-code"] = "true";
     var html = element.innerHTML;
-    var rx = /\[code(\s+lang\="?\w+"?)?\].*?\[\/code\]/gi;
+    var rx = /\[code(\s+lang\="?(\w|\+)+"?)?\].*?\[\/code\]/gi;
     var matches = html.match(rx);
     if (!matches)
         return;
