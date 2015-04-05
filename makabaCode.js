@@ -63,32 +63,31 @@ mcode.selectHtml = "<select id='makabaCodeLexer'><option value='abap'>ABAP</opti
     + "<option value='cfengine3'>CFEngine3</option><option value='cfs'>cfstatement</option>"
     + "<option value='cheetah'>Cheetah</option><option value='clojure'>Clojure</option>"
     + "<option value='cmake'>CMake</option><option value='cobol'>COBOL</option>"
-    + "<option value='cobolfree'>COBOLFree</option>"
-    + "<option value='coffee-script'>CoffeeScript</option><option value='cfm'>Coldfusion HTML</option>"
-    + "<option value='common-lisp'>Common Lisp</option><option value='coq'>Coq</option>"
-    + "<option value='cpp-objdump'>cpp-objdump</option><option value='croc'>Croc</option>"
-    + "<option value='css'>CSS</option><option value='css+django'>CSS+Django/Jinja</option>"
-    + "<option value='css+genshitext'>CSS+Genshi Text</option><option value='css+lasso'>CSS+Lasso</option>"
-    + "<option value='css+mako'>CSS+Mako</option><option value='css+myghty'>CSS+Myghty</option>"
-    + "<option value='css+php'>CSS+PHP</option><option value='css+erb'>CSS+Ruby</option>"
-    + "<option value='css+smarty'>CSS+Smarty</option><option value='cuda'>CUDA</option>"
-    + "<option value='cython'>Cython</option><option value='d'>D</option><option value='d-objdump'>d-objdump</option>"
-    + "<option value='dpatch'>Darcs Patch</option><option value='dart'>Dart</option>"
-    + "<option value='control'>Debian Control file</option><option value='sourceslist'>Debian Sourcelist</option>"
-    + "<option value='delphi'>Delphi</option><option value='dg'>dg</option><option value='diff'>Diff</option>"
-    + "<option value='django'>Django/Jinja</option><option value='dtd'>DTD</option><option value='duel'>Duel</option>"
-    + "<option value='dylan'>Dylan</option><option value='dylan-console'>Dylan session</option>"
-    + "<option value='dylan-lid'>DylanLID</option><option value='ec'>eC</option><option value='ecl'>ECL</option>"
-    + "<option value='elixir'>Elixir</option><option value='iex'>Elixir iex session</option>"
-    + "<option value='ragel-em'>Embedded Ragel</option><option value='erb'>ERB</option>"
-    + "<option value='erlang'>Erlang</option><option value='erl'>Erlang erl session</option>"
-    + "<option value='evoque'>Evoque</option><option value='factor'>Factor</option>"
-    + "<option value='fancy'>Fancy</option><option value='fan'>Fantom</option><option value='felix'>Felix</option>"
-    + "<option value='fortran'>Fortran</option><option value='Clipper'>FoxPro</option>"
-    + "<option value='fsharp'>FSharp</option><option value='gas'>GAS</option><option value='genshi'>Genshi</option>"
-    + "<option value='genshitext'>Genshi Text</option><option value='pot'>Gettext Catalog</option>"
-    + "<option value='Cucumber'>Gherkin</option><option value='glsl'>GLSL</option>"
-    + "<option value='gnuplot'>Gnuplot</option><option value='go'>Go</option>"
+    + "<option value='cobolfree'>COBOLFree</option><option value='coffee-script'>CoffeeScript</option>"
+    + "<option value='cfm'>Coldfusion HTML</option><option value='common-lisp'>Common Lisp</option>"
+    + "<option value='coq'>Coq</option><option value='cpp-objdump'>cpp-objdump</option>"
+    + "<option value='croc'>Croc</option><option value='css'>CSS</option>"
+    + "<option value='css+django'>CSS+Django/Jinja</option><option value='css+genshitext'>CSS+Genshi Text</option>"
+    + "<option value='css+lasso'>CSS+Lasso</option><option value='css+mako'>CSS+Mako</option>"
+    + "<option value='css+myghty'>CSS+Myghty</option><option value='css+php'>CSS+PHP</option>"
+    + "<option value='css+erb'>CSS+Ruby</option><option value='css+smarty'>CSS+Smarty</option>"
+    + "<option value='cuda'>CUDA</option><option value='cython'>Cython</option><option value='d'>D</option>"
+    + "<option value='d-objdump'>d-objdump</option><option value='dpatch'>Darcs Patch</option>"
+    + "<option value='dart'>Dart</option><option value='control'>Debian Control file</option>"
+    + "<option value='sourceslist'>Debian Sourcelist</option><option value='delphi'>Delphi</option>"
+    + "<option value='dg'>dg</option><option value='diff'>Diff</option><option value='django'>Django/Jinja</option>"
+    + "<option value='dtd'>DTD</option><option value='duel'>Duel</option><option value='dylan'>Dylan</option>"
+    + "<option value='dylan-console'>Dylan session</option><option value='dylan-lid'>DylanLID</option>"
+    + "<option value='ec'>eC</option><option value='ecl'>ECL</option><option value='elixir'>Elixir</option>"
+    + "<option value='iex'>Elixir iex session</option><option value='ragel-em'>Embedded Ragel</option>"
+    + "<option value='erb'>ERB</option><option value='erlang'>Erlang</option>"
+    + "<option value='erl'>Erlang erl session</option><option value='evoque'>Evoque</option>"
+    + "<option value='factor'>Factor</option><option value='fancy'>Fancy</option>"
+    + "<option value='fan'>Fantom</option><option value='felix'>Felix</option><option value='fortran'>Fortran</option>"
+    + "<option value='Clipper'>FoxPro</option><option value='fsharp'>FSharp</option><option value='gas'>GAS</option>"
+    + "<option value='genshi'>Genshi</option><option value='genshitext'>Genshi Text</option>"
+    + "<option value='pot'>Gettext Catalog</option><option value='Cucumber'>Gherkin</option>"
+    + "<option value='glsl'>GLSL</option><option value='gnuplot'>Gnuplot</option><option value='go'>Go</option>"
     + "<option value='gooddata-cl'>GoodData-CL</option><option value='gosu'>Gosu</option>"
     + "<option value='gst'>Gosu Template</option><option value='groff'>Groff</option>"
     + "<option value='groovy'>Groovy</option><option value='haml'>Haml</option>"
@@ -392,6 +391,7 @@ mcode.setCaretPos = function(ctrl, pos) {
 mcode.insertCodeTag = function(lang) {
     var field = document.getElementById("shampoo");
     var value = "[code lang=\"" + lang + "\"]\n\n[/code]";
+    var m = 0;
     if (document.selection) {
         field.focus();
         var sel = document.selection.createRange();
@@ -399,11 +399,12 @@ mcode.insertCodeTag = function(lang) {
     } else if (field.selectionStart || field.selectionStart == "0") {
         var startPos = field.selectionStart;
         var endPos = field.selectionEnd;
+        m = field.value.length - endPos;
         field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
     } else {
         field.value += value;
     }
-    mcode.setCaretPos(field, mcode.caretPos(field) - 8);
+    mcode.setCaretPos(field, mcode.caretPos(field) - 8 - m);
     field.focus();
 };
 
