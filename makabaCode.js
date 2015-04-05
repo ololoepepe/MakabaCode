@@ -9,6 +9,44 @@
 var mcode = mcode || {};
 
 mcode.tasks = {};
+mcode.langs = ["abap", "as", "as3", "ada", "antlr", "antlr-as", "antlr-csharp", "antlr-cpp", "antlr-java",
+    "antlr-objc", "antlr-perl", "antlr-python", "antlr-ruby", "apacheconf", "applescript", "aspectj", "aspx-cs",
+    "aspx-vb", "asy", "ahk", "autoit", "awk", "basemake", "bash", "console", "bat", "bbcode", "befunge", "blitzmax",
+    "boo", "brainfuck", "bro", "bugs", "c", "csharp", "cpp", "c-objdump", "ca65", "cbmbas", "ceylon", "cfengine3",
+    "cfs", "cheetah", "clojure", "cmake", "cobol", "cobolfree", "coffee-script", "cfm", "common-lisp", "coq",
+    "cpp-objdump", "croc", "css", "css+django", "css+genshitext", "css+lasso", "css+mako", "css+myghty", "css+php",
+    "css+erb", "css+smarty", "cuda", "cython", "d", "d-objdump", "dpatch", "dart", "control", "sourceslist", "delphi",
+    "dg", "diff", "django", "dtd", "duel", "dylan", "dylan-console", "dylan-lid", "ec", "ecl", "elixir", "iex",
+    "ragel-em", "erb", "erlang", "erl", "evoque", "factor", "fancy", "fan", "felix", "fortran", "clipper", "fsharp",
+    "gas", "genshi", "genshitext", "pot", "cucumber", "glsl", "gnuplot", "go", "gooddata-cl", "gosu", "gst", "groff",
+    "groovy", "haml", "haskell", "hx", "html", "html+cheetah", "html+django", "html+evoque", "html+genshi",
+    "html+lasso", "html+mako", "html+myghty", "html+php", "html+smarty", "html+velocity", "http", "haxeml", "hybris",
+    "idl", "ini", "io", "ioke", "irc", "jade", "jags", "java", "jsp", "js", "js+cheetah", "js+django", "js+genshitext",
+    "js+lasso", "js+mako", "js+myghty", "js+php", "js+erb", "js+smarty", "json", "julia", "jlcon", "kconfig", "koka",
+    "kotlin", "lasso", "lighty", "lhs", "live-script", "llvm", "logos", "logtalk", "lua", "make", "mako", "maql",
+    "mason", "matlab", "matlabsession", "minid", "modelica", "modula2", "trac-wiki", "monkey", "moocode", "moon",
+    "mscgen", "mupad", "mxml", "myghty", "mysql", "nasm", "nemerle", "newlisp", "newspeak", "nginx", "nimrod", "nsis",
+    "numpy", "objdump", "objective-c", "objective-c++", "objective-j", "ocaml", "octave", "ooc", "opa", "openedge",
+    "perl", "php", "plpgsql", "psql", "postgresql", "postscript", "pov", "powershell", "prolog", "properties",
+    "protobuf", "puppet", "pypylog", "python", "python3", "py3tb", "pycon", "pytb", "qml", "racket", "ragel",
+    "ragel-c", "ragel-cpp", "ragel-d", "ragel-java", "ragel-objc", "ragel-ruby", "raw", "rconsole", "rd", "rebol",
+    "redcode", "registry", "rst", "rhtml", "RobotFramework", "spec", "rb", "rbcon", "rust", "splus", "sass", "scala",
+    "ssp", "scaml", "scheme", "scilab", "scss", "shell-session", "smali", "smalltalk", "smarty", "snobol", "sp", "sql",
+    "sqlite3", "squidconf", "stan", "sml", "systemverilog", "tcl", "tcsh", "tea", "tex", "text", "treetop", "ts",
+    "urbiscript", "vala", "vb.net", "velocity", "verilog", "vgl", "vhdl", "vim", "xml", "xml+cheetah", "xml+django",
+    "xml+evoque", "xml+lasso", "xml+mako", "xml+myghty", "xml+php", "xml+erb", "xml+smarty", "xml+velocity", "xquery",
+    "xslt", "xtend", "yaml", /*Here follows aliases*/
+    "lisp", "c#"];
+
+mcode.inLangs = function(lang) {
+    if (!lang)
+        return true;
+    for (var i = 0; i < mcode.langs.length; ++i) {
+        if (lang == mcode.langs[i])
+            return true;
+    }
+    return false;
+};
 
 mcode.isEmpty = function(obj) {
     if (!obj)
@@ -46,7 +84,7 @@ mcode.parts = function(s) {
     s.split("\n").forEach(function(line) {
         if (parts.length >= 1) {
             var last = parts[parts.length - 1];
-            if (last.length + line.length < 500)
+            if (last.length + line.length < 400)
                 parts[parts.length - 1] += line + "\n";
             else
                 parts.push(line + "\n");
@@ -58,10 +96,16 @@ mcode.parts = function(s) {
 };
 
 mcode.language = function(source) {
-    var lang = source.match(/lang\="?(\w|\+)+"?\]/gi);
+    var lang = source.match(/lang\="?(\w|\+|\-| |#)+"?\]/gi);
     if (!lang)
         return null;
-    return lang[0].replace("lang=", "").replace("]", "").split("\"").join("").split(" ").join("").replace("++", "pp").toLowerCase();
+    lang = lang[0].replace("lang=", "").replace("]", "").split("\"").join("").replace(" ", "-");
+    lang = lang.replace("++", "pp").toLowerCase();
+    if ("lisp" == lang)
+        lang = "common-lisp";
+    else if ("c#" == lang)
+        lang = "csharp";
+    return lang;
 };
 
 mcode.code = function(source) {
@@ -92,8 +136,6 @@ mcode.subtaskReceived = function(element, source, target) {
     if (mcode.tasks[element.id]["subtasks"].length == mcode.tasks[element.id]["subtaskCount"]) {
         mcode.doTask(element, mcode.tasks[element.id]["subtasks"]);
         delete mcode.tasks[element.id];
-        if (mcode.isEmpty(mcode.tasks))
-            setTimeout(mcode.execute, 15 * 1000);
     }
 };
 
@@ -112,8 +154,13 @@ mcode.doTask = function(element, subtasks) {
 mcode.request = function(element, source, lang, parts, current, html) {
     if (!element || typeof source != "string")
         return;
-    if (!lang)
+    if (!lang) {
         lang = mcode.language(source);
+        if (!mcode.inLangs(lang)) {
+            delete mcode.tasks[element.id];
+            return;
+        }
+    }
     if (!parts)
         parts = mcode.parts(mcode.code(source));
     if (!current)
@@ -129,6 +176,8 @@ mcode.request = function(element, source, lang, parts, current, html) {
             if (4 === res.readyState) {
                 if (200 == res.status) {
                     var text = res.responseText;
+                    text = text.replace("overflow:auto;", "overflow:hidden;");
+                    text = text.replace("<pre style=\"", "<pre style=\"overflow:hidden;");
                     if (html.length > 0) {
                         html = html.replace("\n</pre></div>", "");
                         text = text.replace(/<div.*?><pre.*?>/, "");
@@ -139,6 +188,7 @@ mcode.request = function(element, source, lang, parts, current, html) {
                     else
                         mcode.request(element, source, lang, parts, current + 1, html);
                 } else {
+                    delete mcode.tasks[element.id];
                     alert(res.statusText);
                 }
             }
@@ -151,7 +201,7 @@ mcode.processBlockquote = function(element) {
         return;
     element["makaba-code"] = "true";
     var html = element.innerHTML;
-    var rx = /\[code(\s+lang\="?(\w|\+)+"?)?\].*?\[\/code\]/gi;
+    var rx = /\[code(\s+lang\="?(\w|\+|\-| |#)+"?)?\].*?\[\/code\]/gi;
     var matches = html.match(rx);
     if (!matches)
         return;
@@ -167,7 +217,7 @@ mcode.processBlockquote = function(element) {
 mcode.execute = function() {
     var elements = document.body.querySelectorAll("blockquote.post-message:not([makaba-code='true'])");
     if (!elements || elements.length < 1)
-        return setTimeout(mcode.execute, 15 * 1000);
+        return;
     for (var i = 0; i < elements.length; ++i)
         mcode.processBlockquote(elements[i]);
 };
@@ -175,16 +225,14 @@ mcode.execute = function() {
 mcode.executeFirstTime = function() {
     mcode.execute();
     var navs = document.body.querySelectorAll(".thread-nav");
-    for (var i = 0; i < navs.length; ++i) {
-        var nav = navs[i];
-        nav.appendChild(document.createTextNode(" ["));
-        var a = document.createElement("a");
-        a.href = "javascript:void(0);";
-        a.onclick = mcode.execute;
-        a.appendChild(document.createTextNode("Подсветить синтаксис"));
-        nav.appendChild(a);
-        nav.appendChild(document.createTextNode("]"));
-    }
+    document.addEventListener ("DOMNodeInserted", function(e) {
+        var el = e.target;
+        if (!el || !el.className)
+            return;
+        if ("post-wrapper" != el.className)
+            return;
+        mcode.execute();
+    }, false);
 };
 
 mcode.addOnloadListener = function() {
