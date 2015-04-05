@@ -20,6 +20,27 @@ mcode.isEmpty = function(obj) {
     return true;
 };
 
+mcode.filled = function(what, count) {
+    var s = "";
+    for (var i = 0; i < count; ++i)
+        s += what;
+    return s;
+};
+
+mcode.replaceTabs = function(s, tabWidth) {
+    var i = 0;
+    while (i < s.length) {
+        if (s.charAt(i) == "\t") {
+            var spcount = tabWidth - (i < tabWidth ? i : i % tabWidth);
+            s = s.substr(0, i) + mcode.filled(" ", spcount ? spcount : tabWidth) + s.substr(i + 1);
+            i += spcount;
+        } else {
+            ++i;
+        }
+    }
+    return s;
+};
+
 mcode.parts = function(s) {
     var parts = [];
     s.split("\n").forEach(function(line) {
@@ -49,6 +70,10 @@ mcode.code = function(source) {
     code = code.split("<em>").join("*").split("</em>").join("*").split("<br>").join("\n");
     code = code.split("&lt;").join("<").split("&gt;").join(">").split("&quot;").join("\"").split("&amp;").join("&");
     code = code.split("#92;").join("\\");
+    var lines = code.split("\n");
+    for (var i = 0; i < lines.length; ++i)
+        lines[i] = mcode.replaceTabs(lines[i], 4);
+    code = lines.join("\n");
     return code;
 };
 
