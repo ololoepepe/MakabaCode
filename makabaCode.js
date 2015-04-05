@@ -44,7 +44,7 @@ mcode.replaceTabs = function(s, tabWidth) {
 mcode.parts = function(s) {
     var parts = [];
     s.split("\n").forEach(function(line) {
-        if (parts.length > 1) {
+        if (parts.length >= 1) {
             var last = parts[parts.length - 1];
             if (last.length + line.length < 500)
                 parts[parts.length - 1] += line + "\n";
@@ -70,6 +70,10 @@ mcode.code = function(source) {
     code = code.split("<em>").join("*").split("</em>").join("*").split("<br>").join("\n");
     code = code.split("&lt;").join("<").split("&gt;").join(">").split("&quot;").join("\"").split("&amp;").join("&");
     code = code.split("#92;").join("\\");
+    while (code.indexOf("\n") == 0)
+        code = code.substr(1);
+    while (code.lastIndexOf("\n") == code.length - 1)
+        code = code.substr(0, code.length - 1);
     var lines = code.split("\n");
     for (var i = 0; i < lines.length; ++i)
         lines[i] = mcode.replaceTabs(lines[i], 4);
@@ -114,7 +118,8 @@ mcode.request = function(element, source, lang, parts, current, html) {
         current = 0;
     if (!html)
         html = "";
-    var params = "code=" + encodeURIComponent(parts[current]) + (!!lang ? ("&lexer=" + encodeURIComponent(lang)) : "");
+    var params = "code=" + encodeURIComponent(parts[current]) + "&style=friendly&lexer="
+        + (!!lang ? encodeURIComponent(lang) : "text");
     GM_xmlhttpRequest({
         method: "GET",
         url: "http://hilite.me/api?" + params,
@@ -123,7 +128,7 @@ mcode.request = function(element, source, lang, parts, current, html) {
                 if (200 == res.status) {
                     var text = res.responseText;
                     if (html.length > 0) {
-                        html = html.replace("</pre></div>", "");
+                        html = html.replace("\n</pre></div>", "");
                         text = text.replace(/<div.*?><pre.*?>/, "");
                     }
                     html += text;
