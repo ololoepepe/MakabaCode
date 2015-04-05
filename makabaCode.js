@@ -36,7 +36,7 @@ mcode.langs = ["abap", "as", "as3", "ada", "antlr", "antlr-as", "antlr-csharp", 
     "urbiscript", "vala", "vb.net", "velocity", "verilog", "vgl", "vhdl", "vim", "xml", "xml+cheetah", "xml+django",
     "xml+evoque", "xml+lasso", "xml+mako", "xml+myghty", "xml+php", "xml+erb", "xml+smarty", "xml+velocity", "xquery",
     "xslt", "xtend", "yaml", /*Here follows aliases*/
-    "lisp", "c#"];
+    "lisp", "c#", "f#"];
 
 mcode.inLangs = function(lang) {
     if (!lang)
@@ -105,6 +105,8 @@ mcode.language = function(source) {
         lang = "common-lisp";
     else if ("c#" == lang)
         lang = "csharp";
+    else if ("f#" == lang)
+        lang = "fsharp";
     return lang;
 };
 
