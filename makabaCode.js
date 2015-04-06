@@ -424,7 +424,10 @@ mcode.processLink = function(link) {
         return;
     link["makaba-code"] = "true";
     (function(link) {
-        var id = link.href.match(/pastebin.com\/(\w+)/)[1];
+        var m = link.href.match(/pastebin.com\/(\w+)/);
+        if (!m || m.length < 2)
+            return;
+        var id = m[1];
         var div = document.createElement("div");
         div.style.overflow = "hidden";
         div.style.width = "1000px";
