@@ -3,6 +3,8 @@
 // @namespace   idinahuy
 // @include     *2ch.*/pr*
 // @version     1
+// @grant       GM_getValue
+// @grant       GM_setValue
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -38,8 +40,9 @@ mcode.langs = ["abap", "as", "as3", "ada", "antlr", "antlr-as", "antlr-csharp", 
     "xslt", "xtend", "yaml", /*Here follows aliases*/
     "lisp", "c#", "f#", "ruby"];
 
-mcode.selectHtml = "<select id='makabaCodeLexer'><option value='abap'>ABAP</option><option value='as'>ActionScript</option>"
-    + "<option value='as3'>ActionScript 3</option><option value='ada'>Ada</option><option value='antlr'>ANTLR</option>"
+mcode.lexerSelectHtml = "<select id='makabaCodeLexer'><option value='abap'>ABAP</option>"
+    + "<option value='as'>ActionScript</option><option value='as3'>ActionScript 3</option>"
+    + "<option value='ada'>Ada</option><option value='antlr'>ANTLR</option>"
     + "<option value='antlr-as'>ANTLR With ActionScript Target</option>"
     + "<option value='antlr-csharp'>ANTLR With C# Target</option>"
     + "<option value='antlr-cpp'>ANTLR With CPP Target</option>"
@@ -174,6 +177,18 @@ mcode.selectHtml = "<select id='makabaCodeLexer'><option value='abap'>ABAP</opti
     + "<option value='xslt'>XSLT</option><option value='xtend'>Xtend</option><option value='yaml'>YAML</option>"
     + "</select>";
 
+mcode.styleSelectHtml = "<select id='makabaCodeStyle'><option value='autumn'>autumn</option>"
+    + "<option value='borland'>borland</option><option value='bw'>bw</option>"
+    + "<option value='colorful'>colorful</option><option value='default'>default</option>"
+    + "<option value='emacs'>emacs</option><option value='friendly'>friendly</option>"
+    + "<option value='fruity'>fruity</option><option value='manni'>manni</option>"
+    + "<option value='monokai'>monokai</option><option value='murphy'>murphy</option>"
+    + "<option value='native'>native</option><option value='pastie'>pastie</option>"
+    + "<option value='perldoc'>perldoc</option><option value='rrt'>rrt</option><option value='tango'>tango</option>"
+    + "<option value='trac'>trac</option><option value='vim'>vim</option><option value='vs'>vs</option></select>";
+
+mcode.lineNosHtml = "<input id='makabaCodeLineNos' id='linenos' type='checkbox' />";
+
 mcode.inLangs = function(lang) {
     if (!lang)
         return true;
@@ -192,6 +207,14 @@ mcode.isEmpty = function(obj) {
             return false;
     }
     return true;
+};
+
+mcode.toCenter = function(element) {
+    if (!element)
+        return;
+    var doc = document.documentElement;
+    element.style.left = (doc.clientWidth / 2 - element.offsetWidth / 2) + "px";
+    element.style.top = (doc.clientHeight / 2 - element.offsetHeight / 2) + "px";
 };
 
 mcode.filled = function(what, count) {
@@ -213,22 +236,6 @@ mcode.replaceTabs = function(s, tabWidth) {
         }
     }
     return s;
-};
-
-mcode.parts = function(s) {
-    var parts = [];
-    s.split("\n").forEach(function(line) {
-        if (parts.length >= 1) {
-            var last = parts[parts.length - 1];
-            if (last.length + line.length < 400)
-                parts[parts.length - 1] += line + "\n";
-            else
-                parts.push(line + "\n");
-        } else {
-            parts.push(line + "\n");
-        }
-    });
-    return parts;
 };
 
 mcode.language = function(source) {
@@ -267,6 +274,68 @@ mcode.code = function(source) {
     return code;
 };
 
+mcode.appendRow = function(table, labelText, html) {
+    if (!table || !labelText || !html)
+        return;
+    var tr = document.createElement("tr");
+    var tdl = document.createElement("td");
+    tdl.appendChild(document.createTextNode(labelText));
+    tr.appendChild(tdl);
+    var td = document.createElement("td");
+    td.innerHTML = html;
+    tr.appendChild(td);
+    table.appendChild(tr);
+};
+
+mcode.showSettings = function() {
+    var div = document.createElement("div");
+    div.style.position = "fixed";
+    div.style.zIndex = "9000";
+    div.style.height = "120px";
+    div.style.width = "300px";
+    div.style.backgroundColor = "#DDDDDD";
+    var table = document.createElement("table");
+    mcode.appendRow(table, "Стиль:", mcode.styleSelectHtml);
+    mcode.appendRow(table, "Номера строк:", mcode.lineNosHtml);
+    div.appendChild(table);
+    var font = document.createElement("font");
+    font.color = "red";
+    font.appendChild(document.createTextNode("Не забудьте обновить страницу!"));
+    div.appendChild(font);
+    var buttonBox = document.createElement("div");
+    buttonBox.style.position = "absolute";
+    buttonBox.style.bottom = "5px";
+    buttonBox.style.right = "10px";
+    var button = document.createElement("button");
+    button.appendChild(document.createTextNode("Сохранить"));
+    button.onclick = function() {
+        GM_setValue("makabaCodeStyle", sel.options[sel.selectedIndex].value);
+        GM_setValue("makabaCodeLineNos", !!lineNos.checked);
+        document.body.removeChild(div);
+    };
+    buttonBox.appendChild(button);
+    var cButton = document.createElement("button");
+    cButton.appendChild(document.createTextNode("Отмена"));
+    cButton.onclick = function() {
+        document.body.removeChild(div);
+    };
+    buttonBox.appendChild(cButton);
+    div.appendChild(buttonBox);
+    document.body.appendChild(div);
+    var sel = document.getElementById("makabaCodeStyle");
+    var lineNos = document.getElementById("makabaCodeLineNos");
+    var style = GM_getValue("makabaCodeStyle", "friendly");
+    for (var i = 0; i < sel.options.length; ++i) {
+        if (style == sel.options[i].value) {
+            sel.options[i].selected = true;
+            break;
+        }
+    }
+    if (!!GM_getValue("makabaCodeLineNos", false))
+        lineNos.checked = true;
+    mcode.toCenter(div);
+};
+
 mcode.subtaskReceived = function(element, source, target) {
     var task = {
         "source": source,
@@ -291,7 +360,7 @@ mcode.doTask = function(element, subtasks) {
     element.innerHTML = html;
 };
 
-mcode.request = function(element, source, lang, parts, current, html) {
+mcode.request = function(element, source, lang) {
     if (!element || typeof source != "string")
         return;
     if (!lang) {
@@ -301,32 +370,28 @@ mcode.request = function(element, source, lang, parts, current, html) {
             return;
         }
     }
-    if (!parts)
-        parts = mcode.parts(mcode.code(source));
-    if (!current)
-        current = 0;
-    if (!html)
-        html = "";
-    var params = "code=" + encodeURIComponent(parts[current]) + "&style=friendly&lexer="
-        + (!!lang ? encodeURIComponent(lang) : "text");
+    var params = "code=" + encodeURIComponent(mcode.code(source));
+    params += "&lexer=" + (!!lang ? encodeURIComponent(lang) : "text");
+    params += "&style=" + GM_getValue("makabaCodeStyle", "friendly");
+    if (!!GM_getValue("makabaCodeLineNos", false))
+        params += "&linenos=true";
     GM_xmlhttpRequest({
-        method: "GET",
-        url: "http://hilite.me/api?" + params,
+        method: "POST",
+        url: "http://hilite.me/api",
+        data: params,
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
         onload: function(res) {
             if (4 === res.readyState) {
                 if (200 == res.status) {
-                    var text = res.responseText;
-                    text = text.replace("overflow:auto;", "overflow:hidden;");
-                    text = text.replace("<pre style=\"", "<pre style=\"overflow:hidden;");
-                    if (html.length > 0) {
-                        html = html.replace("\n</pre></div>", "");
-                        text = text.replace(/<div.*?><pre.*?>/, "");
-                    }
-                    html += text;
-                    if (current == parts.length - 1)
-                        mcode.subtaskReceived(element, source, html);
-                    else
-                        mcode.request(element, source, lang, parts, current + 1, html);
+                    var html = res.responseText;
+                    html = html.replace("overflow:auto;", "overflow-y:hidden;");
+                    html = html.replace("<pre style=\"margin: 0;", "<pre style=\"overflow-y: hidden; margin: 0;");
+                    if (!!GM_getValue("makabaCodeLineNos", false))
+                        html = html.replace("<pre style=\"margin: 0;", "<pre style=\"overflow-y: hidden; margin: 0;");
+                    //Yep, twice, because there are two <pre> tags if (line numbers are enabled)
+                    mcode.subtaskReceived(element, source, html);
                 } else {
                     delete mcode.tasks[element.id];
                     alert(res.statusText);
@@ -421,7 +486,7 @@ mcode.executeFirstTime = function() {
     }, false);
     var toolbar = document.getElementById("CommentToolbar");
     var span = document.createElement("span");
-    span.innerHTML = mcode.selectHtml;
+    span.innerHTML = mcode.lexerSelectHtml;
     var button = document.createElement("button");
     button.appendChild(document.createTextNode("Вставить тег [code]"));
     button.onclick = function() {
@@ -431,6 +496,16 @@ mcode.executeFirstTime = function() {
         return false;
     };
     span.appendChild(button);
+    var sButton = document.createElement("button");
+    var img = document.createElement("img");
+    img.src = "https://ololoepepe.me/files/configure.png";
+    sButton.appendChild(img);
+    sButton.title = "Настройки";
+    sButton.onclick = function() {
+        mcode.showSettings();
+        return false;
+    };
+    span.insertBefore(sButton, span.firstChild);
     toolbar.appendChild(span);
 };
 
