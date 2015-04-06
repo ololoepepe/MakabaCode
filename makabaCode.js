@@ -419,12 +419,41 @@ mcode.processBlockquote = function(element) {
     });
 };
 
+mcode.processLink = function(link) {
+    if (!link)
+        return;
+    link["makaba-code"] = "true";
+    (function(link) {
+        var id = link.href.match(/pastebin.com\/(\w+)/)[1];
+        var div = document.createElement("div");
+        div.style.overflow = "hidden";
+        div.style.width = "1000px";
+        div.style.height = "500px";
+        var iframe = document.createElement("iframe");
+        iframe.style.margin = 0;
+        iframe.style.width = "1000px";
+        iframe.style.height = "500px";
+        iframe.style.border = "none";
+        iframe.style.overflow = "hidden";
+        iframe.style.scrolling = "no";
+        iframe.src = "https://pastebin.com/embed_iframe.php?i=" + id;
+        div.appendChild(iframe);
+        link.parentNode.replaceChild(div, link);
+    })(link);
+};
+
 mcode.execute = function() {
     var elements = document.body.querySelectorAll("blockquote.post-message:not([makaba-code='true'])");
     if (!elements || elements.length < 1)
         return;
     for (var i = 0; i < elements.length; ++i)
         mcode.processBlockquote(elements[i]);
+    var links = document.body.querySelectorAll("a[href^='http://pastebin.com/']:not([makaba-code='true']), "
+        + "a[href^='https://pastebin.com/']:not([makaba-code='true'])");
+    if (!links || links.length < 1)
+        return;
+    for (var i = 0; i < links.length; ++i)
+        mcode.processLink(links[i]);
 };
 
 mcode.caretPos = function(ctrl) {
