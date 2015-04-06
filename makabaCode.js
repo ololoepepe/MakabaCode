@@ -406,7 +406,7 @@ mcode.processBlockquote = function(element) {
         return;
     element["makaba-code"] = "true";
     var html = element.innerHTML;
-    var rx = /\[code(\s+lang\="?(\w|\+|\-| |#)+"?)?\].*?\[\/code\]/gi;
+    var rx = /\[code(\s+lang\="?(\w|\+|\-| |#)+"?)?\].+?\[\/code\]/gi;
     var matches = html.match(rx);
     if (!matches)
         return;
