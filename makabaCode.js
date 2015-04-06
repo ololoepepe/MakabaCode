@@ -431,17 +431,33 @@ mcode.processLink = function(link) {
         var div = document.createElement("div");
         div.style.overflow = "hidden";
         div.style.width = "1000px";
-        div.style.height = "500px";
         var iframe = document.createElement("iframe");
         iframe.style.margin = 0;
         iframe.style.width = "1000px";
-        iframe.style.height = "500px";
         iframe.style.border = "none";
         iframe.style.overflow = "hidden";
         iframe.style.scrolling = "no";
         iframe.src = "https://pastebin.com/embed_iframe.php?i=" + id;
         div.appendChild(iframe);
-        link.parentNode.replaceChild(div, link);
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://pastebin.com/embed_iframe.php?i=" + id,
+            onload: function(res) {
+                if (4 === res.readyState) {
+                    if (200 == res.status) {
+                        var html = res.responseText;
+                        var height = 21 * (html.match(/<li/gi) || []).length + 22 + 1;
+                        div.style.height = height + "px";
+                        iframe.style.height = height + "px";
+                        if (html.indexOf("ERROR, PASTE ID IS INVALID, OR PASTE HAS BEEN REMOVED!") >= 0)
+                            return;
+                        link.parentNode.replaceChild(div, link);
+                    } else {
+                        alert(res.statusText);
+                    }
+                }
+            }
+        });
     })(link);
 };
 
