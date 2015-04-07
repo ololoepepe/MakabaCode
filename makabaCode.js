@@ -419,7 +419,7 @@ mcode.processBlockquote = function(element) {
     });
 };
 
-mcode.processLink = function(link) {
+mcode.processPastebinLink = function(link) {
     if (!link)
         return;
     link["makaba-code"] = "true";
@@ -461,18 +461,66 @@ mcode.processLink = function(link) {
     })(link);
 };
 
+mcode.processIdeoneLink = function(link) {
+    if (!link)
+        return;
+    link["makaba-code"] = "true";
+    (function(link) {
+        var m = link.href.match(/ideone.com\/(\w+)/);
+        if (!m || m.length < 2)
+            return;
+        var id = m[1];
+        var div = document.createElement("div");
+        div.style.overflow = "hidden";
+        div.style.width = "1000px";
+        var iframe = document.createElement("iframe");
+        iframe.style.margin = 0;
+        iframe.style.width = "1000px";
+        iframe.style.border = "none";
+        iframe.style.overflow = "hidden";
+        iframe.style.scrolling = "no";
+        iframe.src = "https://ideone.com/embed/" + id;
+        div.appendChild(iframe);
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://ideone.com/embed/" + id,
+            onload: function(res) {
+                if (4 === res.readyState) {
+                    if (200 == res.status) {
+                        var html = res.responseText;
+                        var height = 20 * (html.match(/<li class\="li1/gi) || []).length + 35 + 16;
+                        div.style.height = height + "px";
+                        iframe.style.height = height + "px";
+                        if (html.indexOf("<div") < 0)
+                            return;
+                        link.parentNode.replaceChild(div, link);
+                    } else {
+                        alert(res.statusText);
+                    }
+                }
+            }
+        });
+    })(link);
+};
+
 mcode.execute = function() {
     var elements = document.body.querySelectorAll("blockquote.post-message:not([makaba-code='true'])");
     if (!elements || elements.length < 1)
         return;
     for (var i = 0; i < elements.length; ++i)
         mcode.processBlockquote(elements[i]);
-    var links = document.body.querySelectorAll("a[href^='http://pastebin.com/']:not([makaba-code='true']), "
+    var pastebinLinks = document.body.querySelectorAll("a[href^='http://pastebin.com/']:not([makaba-code='true']), "
         + "a[href^='https://pastebin.com/']:not([makaba-code='true'])");
-    if (!links || links.length < 1)
+    if (!pastebinLinks || pastebinLinks.length < 1)
         return;
-    for (var i = 0; i < links.length; ++i)
-        mcode.processLink(links[i]);
+    for (var i = 0; i < pastebinLinks.length; ++i)
+        mcode.processPastebinLink(pastebinLinks[i]);
+    var ideoneLinks = document.body.querySelectorAll("a[href^='http://ideone.com/']:not([makaba-code='true']), "
+        + "a[href^='https://ideone.com/']:not([makaba-code='true'])");
+    if (!ideoneLinks || ideoneLinks.length < 1)
+        return;
+    for (var i = 0; i < ideoneLinks.length; ++i)
+        mcode.processIdeoneLink(ideoneLinks[i]);
 };
 
 mcode.caretPos = function(ctrl) {
