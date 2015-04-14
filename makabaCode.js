@@ -401,6 +401,26 @@ mcode.request = function(element, source, lang) {
     });
 };
 
+mcode.processExpand = function(expand) {
+    if (!expand)
+        return;
+    var a = document.createElement("a");
+    a.appendChild(document.createTextNode("Показать текст полностью"));
+    var id = expand.parentNode.id.replace("m", "");
+    a.id = "expandLink" + id;
+    (function(id, a) {
+        document.body.addEventListener("click", function(e) {
+            if (a.id != e.target.id)
+                return;
+            var parent = document.getElementById("m" + id);
+            parent.removeChild(document.getElementById("shrinked-post" + id));
+            parent.removeChild(document.getElementById("expandLink" + id));
+            parent.innerHTML = document.getElementById("original-post" + id).innerHTML;
+        }, false);
+    })(id, a);
+    expand.parentNode.replaceChild(a, expand);
+};
+
 mcode.processBlockquote = function(element) {
     if (!element || !element.childNodes)
         return;
@@ -410,6 +430,9 @@ mcode.processBlockquote = function(element) {
     var matches = html.match(rx);
     if (!matches)
         return;
+    var expand = element.querySelector("span.expand-large-comment");
+    if (expand)
+        mcode.processExpand(expand);
     mcode.tasks[element.id] = {
         "subtasks": [],
         "subtaskCount": matches.length,
@@ -505,22 +528,22 @@ mcode.processIdeoneLink = function(link) {
 
 mcode.execute = function() {
     var elements = document.body.querySelectorAll("blockquote.post-message:not([makaba-code='true'])");
-    if (!elements || elements.length < 1)
-        return;
-    for (var i = 0; i < elements.length; ++i)
-        mcode.processBlockquote(elements[i]);
+    if (elements) {
+        for (var i = 0; i < elements.length; ++i)
+            mcode.processBlockquote(elements[i]);
+    }
     var pastebinLinks = document.body.querySelectorAll("a[href^='http://pastebin.com/']:not([makaba-code='true']), "
         + "a[href^='https://pastebin.com/']:not([makaba-code='true'])");
-    if (!pastebinLinks || pastebinLinks.length < 1)
-        return;
-    for (var i = 0; i < pastebinLinks.length; ++i)
-        mcode.processPastebinLink(pastebinLinks[i]);
+    if (pastebinLinks) {
+        for (var i = 0; i < pastebinLinks.length; ++i)
+            mcode.processPastebinLink(pastebinLinks[i]);
+    }
     var ideoneLinks = document.body.querySelectorAll("a[href^='http://ideone.com/']:not([makaba-code='true']), "
         + "a[href^='https://ideone.com/']:not([makaba-code='true'])");
-    if (!ideoneLinks || ideoneLinks.length < 1)
-        return;
-    for (var i = 0; i < ideoneLinks.length; ++i)
-        mcode.processIdeoneLink(ideoneLinks[i]);
+    if (ideoneLinks) {
+        for (var i = 0; i < ideoneLinks.length; ++i)
+            mcode.processIdeoneLink(ideoneLinks[i]);
+    }
 };
 
 mcode.caretPos = function(ctrl) {
