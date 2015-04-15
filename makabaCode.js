@@ -443,12 +443,13 @@ mcode.processBlockquote = function(element) {
     });
 };
 
-mcode.processPastebinLink = function(link) {
-    if (!link)
+mcode.processLink = function(link, host, href, after) {
+    if (!link || !host || !href)
         return;
     link["makaba-code"] = "true";
     (function(link) {
-        var m = link.href.match(/pastebin.com\/(\w+)/);
+        var rx = new RegExp(host + "\/(\\w+)");
+        var m = link.href.match(rx);
         if (!m || m.length < 2)
             return;
         var id = m[1];
@@ -461,58 +462,22 @@ mcode.processPastebinLink = function(link) {
         iframe.style.border = "none";
         iframe.style.overflow = "hidden";
         iframe.style.scrolling = "no";
-        iframe.src = "https://pastebin.com/embed_iframe.php?i=" + id;
+        iframe.src = href.replace("%id%", id);
         div.appendChild(iframe);
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: "https://pastebin.com/embed_iframe.php?i=" + id,
-            onload: function(res) {
-                if (4 === res.readyState) {
-                    if (200 == res.status) {
-                        var html = res.responseText;
-                        var height = 21 * (html.match(/<li/gi) || []).length + 22 + 1;
-                        div.style.height = height + "px";
-                        iframe.style.height = height + "px";
-                        if (html.indexOf("ERROR, PASTE ID IS INVALID, OR PASTE HAS BEEN REMOVED!") >= 0)
-                            return;
-                        link.parentNode.replaceChild(div, link);
-                    } else {
-                        alert(res.statusText);
-                    }
-                }
-            }
-        });
-    })(link);
-};
-
-mcode.processIdeoneLink = function(link) {
-    if (!link)
-        return;
-    link["makaba-code"] = "true";
-    (function(link) {
-        var m = link.href.match(/ideone.com\/(\w+)/);
-        if (!m || m.length < 2)
+        if (typeof after != "function") {
+            var height = (typeof after == "number") ? after : 500;
+            div.style.height = height + "px";
+            iframe.style.height = height + "px";
             return;
-        var id = m[1];
-        var div = document.createElement("div");
-        div.style.overflow = "hidden";
-        div.style.width = "1000px";
-        var iframe = document.createElement("iframe");
-        iframe.style.margin = 0;
-        iframe.style.width = "1000px";
-        iframe.style.border = "none";
-        iframe.style.overflow = "hidden";
-        iframe.style.scrolling = "no";
-        iframe.src = "https://ideone.com/embed/" + id;
-        div.appendChild(iframe);
+        }
         GM_xmlhttpRequest({
             method: "GET",
-            url: "https://ideone.com/embed/" + id,
+            url: href.replace("%id%", id),
             onload: function(res) {
                 if (4 === res.readyState) {
                     if (200 == res.status) {
                         var html = res.responseText;
-                        var height = 20 * (html.match(/<li class\="li1/gi) || []).length + 35 + 16;
+                        var height = after(html);
                         div.style.height = height + "px";
                         iframe.style.height = height + "px";
                         if (html.indexOf("<div") < 0)
@@ -527,24 +492,28 @@ mcode.processIdeoneLink = function(link) {
     })(link);
 };
 
+mcode.processLinks = function(host, href, after) {
+    var links = document.body.querySelectorAll("a[href^='http://" + host + "/']:not([makaba-code='true']), "
+        + "a[href^='https://" + host + "/']:not([makaba-code='true'])");
+    if (!links)
+        return;
+    for (var i = 0; i < links.length; ++i)
+        mcode.processLink(links[i], host, href, after);
+};
+
 mcode.execute = function() {
     var elements = document.body.querySelectorAll("blockquote.post-message:not([makaba-code='true'])");
     if (elements) {
         for (var i = 0; i < elements.length; ++i)
             mcode.processBlockquote(elements[i]);
     }
-    var pastebinLinks = document.body.querySelectorAll("a[href^='http://pastebin.com/']:not([makaba-code='true']), "
-        + "a[href^='https://pastebin.com/']:not([makaba-code='true'])");
-    if (pastebinLinks) {
-        for (var i = 0; i < pastebinLinks.length; ++i)
-            mcode.processPastebinLink(pastebinLinks[i]);
-    }
-    var ideoneLinks = document.body.querySelectorAll("a[href^='http://ideone.com/']:not([makaba-code='true']), "
-        + "a[href^='https://ideone.com/']:not([makaba-code='true'])");
-    if (ideoneLinks) {
-        for (var i = 0; i < ideoneLinks.length; ++i)
-            mcode.processIdeoneLink(ideoneLinks[i]);
-    }
+    mcode.processLinks("pastebin.com", "https://pastebin.com/embed_iframe.php?i=%id%", function(html) {
+        return 21 * (html.match(/<li/gi) || []).length + 22 + 1;
+    });
+    mcode.processLinks("ideone.com", "https://ideone.com/embed/%id%", function(html) {
+        return 20 * (html.match(/<li class\="li1/gi) || []).length + 35 + 16;
+    });
+    mcode.processLinks("jsfiddle.net", "https://jsfiddle.net/%id%/embedded");
 };
 
 mcode.caretPos = function(ctrl) {
