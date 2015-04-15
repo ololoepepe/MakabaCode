@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        MakabaCode
-// @namespace   idinahuy
-// @include     *2ch.*/pr*
+// @namespace   MakabaCode
+// @include     /^https?:\/\/2ch\.(hk|pm|re|tf|wj)/.*$/
 // @version     1
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -39,7 +39,6 @@ mcode.langs = ["abap", "as", "as3", "ada", "antlr", "antlr-as", "antlr-csharp", 
     "xml+evoque", "xml+lasso", "xml+mako", "xml+myghty", "xml+php", "xml+erb", "xml+smarty", "xml+velocity", "xquery",
     "xslt", "xtend", "yaml", /*Here follows aliases*/
     "lisp", "c#", "f#", "ruby"];
-
 mcode.lexerSelectHtml = "<select id='makabaCodeLexer'><option value='abap'>ABAP</option>"
     + "<option value='as'>ActionScript</option><option value='as3'>ActionScript 3</option>"
     + "<option value='ada'>Ada</option><option value='antlr'>ANTLR</option>"
@@ -176,7 +175,6 @@ mcode.lexerSelectHtml = "<select id='makabaCodeLexer'><option value='abap'>ABAP<
     + "<option value='xml+velocity'>XML+Velocity</option><option value='xquery'>XQuery</option>"
     + "<option value='xslt'>XSLT</option><option value='xtend'>Xtend</option><option value='yaml'>YAML</option>"
     + "</select>";
-
 mcode.styleSelectHtml = "<select id='makabaCodeStyle'><option value='autumn'>autumn</option>"
     + "<option value='borland'>borland</option><option value='bw'>bw</option>"
     + "<option value='colorful'>colorful</option><option value='default'>default</option>"
@@ -186,8 +184,8 @@ mcode.styleSelectHtml = "<select id='makabaCodeStyle'><option value='autumn'>aut
     + "<option value='native'>native</option><option value='pastie'>pastie</option>"
     + "<option value='perldoc'>perldoc</option><option value='rrt'>rrt</option><option value='tango'>tango</option>"
     + "<option value='trac'>trac</option><option value='vim'>vim</option><option value='vs'>vs</option></select>";
-
 mcode.lineNosHtml = "<input id='makabaCodeLineNos' id='linenos' type='checkbox' />";
+mcode.makabaTags = ["b", "i", "u", "s", "o", "sup", "sub", "spoiler"];
 
 mcode.inLangs = function(lang) {
     if (!lang)
@@ -263,6 +261,9 @@ mcode.code = function(source) {
     code = code.split("#92;").join("\\");
     if (code.length < 1)
        return code;
+    mcode.makabaTags.forEach(function(tag) {
+        code = code.split("[ " + tag + " ]").join("[" + tag + "]");
+    });
     while (code.indexOf("\n") == 0)
         code = code.substr(1);
     while (code.lastIndexOf("\n") == code.length - 1)
@@ -592,17 +593,52 @@ mcode.insertCodeTag = function(lang) {
     field.focus();
 };
 
-mcode.executeFirstTime = function() {
-    mcode.execute();
-    var navs = document.body.querySelectorAll(".thread-nav");
-    document.addEventListener ("DOMNodeInserted", function(e) {
-        var el = e.target;
-        if (!el || !el.className)
-            return;
-        if ("post-wrapper" != el.className)
-            return;
-        mcode.execute();
-    }, false);
+mcode.processBeforeSubmit = function() {
+    var shampoo = document.getElementById("shampoo");
+    var text = shampoo.value;
+    var rx = /\[code(\s+lang\="?(\w|\+|\-| |#)+"?)?\](.|\n)+?\[\/code\]/gi;
+    var matches = text.match(rx);
+    if (!matches)
+        return;
+    for (var i = 0; i < matches.length; ++i) {
+        var m = matches[i];
+        var pm = m;
+        mcode.makabaTags.forEach(function(tag) {
+            m = m.split("[" + tag + "]").join("[ " + tag + " ]");
+        });
+        text = text.replace(pm, m);
+    }
+    shampoo.value = text;
+};
+
+mcode.initSubmitHook = function() {
+    var sumbit = document.getElementById("submit");
+    var wrapper = document.createElement("div");
+    wrapper.style.display = "inline-block";
+    wrapper.style.width = "88px";
+    wrapper.style.backgroundColor = "#EAEAEA";
+    wrapper.style.borderColor = "#CACACA";
+    wrapper.style.borderWidth = "1px";
+    wrapper.style.borderStyle = "solid";
+    wrapper.style.paddingLeft = "6px";
+    wrapper.style.paddingRight = "6px";
+    wrapper.style.paddingTop = "2px";
+    wrapper.style.paddingBottom = "2px";
+    wrapper.style.marginLeft = "2px";
+    var nsubmit = document.createElement("a");
+    nsubmit.style.color = "#323232";
+    nsubmit.onclick = function() {
+        mcode.processBeforeSubmit();
+        submit.click();
+    };
+    nsubmit.className = submit.className;
+    nsubmit.appendChild(document.createTextNode(submit.value));
+    wrapper.appendChild(nsubmit);
+    sumbit.parentNode.insertBefore(wrapper, submit);
+    submit.style.display = "none";
+};
+
+mcode.initControls = function() {
     var toolbar = document.getElementById("CommentToolbar");
     var span = document.createElement("span");
     span.innerHTML = mcode.lexerSelectHtml;
@@ -626,6 +662,20 @@ mcode.executeFirstTime = function() {
     };
     span.insertBefore(sButton, span.firstChild);
     toolbar.appendChild(span);
+};
+
+mcode.executeFirstTime = function() {
+    mcode.execute();
+    document.addEventListener ("DOMNodeInserted", function(e) {
+        var el = e.target;
+        if (!el || !el.className)
+            return;
+        if ("post-wrapper" != el.className)
+            return;
+        mcode.execute();
+    }, false);
+    mcode.initSubmitHook();
+    mcode.initControls();
 };
 
 mcode.addOnloadListener = function() {
