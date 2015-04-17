@@ -2,8 +2,9 @@
 // @name        MakabaCode
 // @namespace   idinahuy
 // @include     *2ch.*/pr*
-// @version     1
+// @version     1.0.1
 // @grant       GM_xmlhttpRequest
+// @downloadURL https://raw.githubusercontent.com/ololoepepe/MakabaCode/master/makabaCode.js
 // ==/UserScript==
 
 var mcode = mcode || {};
