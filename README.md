@@ -19,9 +19,13 @@ User script for highlighting syntax within [code] tag at 2ch.hk
  
  1. Click on the `Tampermonkey` icon in the right upper corner. Check whether the extension has been enabled. 
  2. Click the button `Add a new script...`
- 3. In opened window past the contents of the [makabaCode](https://github.com/ololoepepe/MakabaCode/blob/master/makabaCode.js)
+ 3. In opened window past the contents of the [makabaCode](https://github.com/ololoepepe/MakabaCode/blob/master/makabaCode.user.js)
  4. Click `save`
  
+ *Firefox*
+
+  [Install script](https://github.com/ololoepepe/MakabaCode/raw/master/makabaCode.user.js) (Greasemonkey should be enabled)
+
 # Usage
  
 The extension works only for 2ch.hk/pr board. This extension gives you an opportunity to use the `[code][/code]` tag that can help you to format your piece of code.
