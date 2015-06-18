@@ -22,7 +22,7 @@ User script for highlighting syntax within [code] tag at 2ch.hk
  3. In opened window past the contents of the [makabaCode](https://github.com/ololoepepe/MakabaCode/blob/master/makabaCode.user.js)
  4. Click `save`
  
- *Firefox*
+*Firefox*
 
   [Install script](https://github.com/ololoepepe/MakabaCode/raw/master/makabaCode.user.js) (Greasemonkey should be enabled)
 
