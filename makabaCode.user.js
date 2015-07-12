@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        MakabaCode
 // @namespace   MakabaCode
-// @include     /^https?:\/\/2ch\.(hk|pm|re|tf|wj)/.*$/
+// @include     /^https?:\/\/(2ch\.(hk|pm|re|tf|wf|yt)|2-ch\.so).*$/
 // @version     1
 // @grant       GM_getValue
 // @grant       GM_setValue
