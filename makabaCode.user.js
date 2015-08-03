@@ -2,10 +2,11 @@
 // @name        MakabaCode
 // @namespace   MakabaCode
 // @include     /^https?:\/\/(2ch\.(hk|pm|re|tf|wf|yt)|2-ch\.so).*$/
-// @version     1
+// @version     1.0.1
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_xmlhttpRequest
+// @downloadURL https://raw.githubusercontent.com/ololoepepe/MakabaCode/master/makabaCode.user.js
 // ==/UserScript==
 
 var mcode = mcode || {};
